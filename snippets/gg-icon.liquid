@@ -1,0 +1,40 @@
+{%- comment -%}
+  Inline icon set for the Gift Guide sections.
+
+  Inlined rather than sprited so an icon costs no request and inherits
+  currentColor.
+
+  Usage:
+    {% render 'gg-icon', name: 'arrow' %}
+    {% render 'gg-icon', name: 'arrow', class: 'gg-btn__arrow' %}
+
+  Params:
+    name  - arrow | plus | close | chevron
+    class - optional extra class
+{%- endcomment -%}
+
+{%- liquid
+  assign icon_class = class | default: ''
+-%}
+
+{%- case name -%}
+  {%- when 'arrow' -%}
+    <svg class="gg-icon {{ icon_class }}" viewBox="0 0 24 12" aria-hidden="true" focusable="false">
+      <path d="M0 6h21M16 1l5 5-5 5" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="square"/>
+    </svg>
+
+  {%- when 'plus' -%}
+    <svg class="gg-icon {{ icon_class }}" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+      <path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'close' -%}
+    <svg class="gg-icon {{ icon_class }}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M5 5l10 10M15 5L5 15" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+
+  {%- when 'chevron' -%}
+    <svg class="gg-icon {{ icon_class }}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+      <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
+    </svg>
+{%- endcase -%}

@@ -1,0 +1,323 @@
+/**
+ * Custom Grid + product popup styles.
+ * Paired with sections/custom-grid.liquid.
+ */
+
+.gg-grid {
+  --gg-ink: #000000;
+  --gg-grid-gap: 20px;
+  --gg-marker-size: 34px;
+  --gg-grid-gutter: clamp(1rem, 3.5vw, 3.25rem);
+
+  display: block;
+  padding: clamp(2rem, 5vw, 4rem) var(--gg-grid-gutter);
+  color: var(--gg-ink);
+}
+
+.gg-grid__heading {
+  margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
+  /*
+    The design sets this heading in a serif, deliberately contrasting the body
+    sans. Driven by its own font_picker so it can be matched exactly.
+  */
+  font-family: var(--gg-heading-font, Georgia, 'Times New Roman', Times, serif);
+  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  font-weight: 400;
+  letter-spacing: -0.01em;
+}
+
+.gg-grid__items {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--gg-grid-gap);
+}
+
+.gg-grid__item {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  background-color: #f6f6f6;
+}
+
+.gg-grid__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gg-grid__image--empty {
+  background-color: #eeeeee;
+}
+
+/* ----------------------------------------------------------------------
+   Marker. Positioned per block, so it can sit on the garment.
+   ---------------------------------------------------------------------- */
+.gg-grid__marker {
+  position: absolute;
+  left: var(--gg-marker-x, 50%);
+  top: var(--gg-marker-y, 50%);
+  width: var(--gg-marker-size);
+  height: var(--gg-marker-size);
+  margin: 0;
+  padding: 0;
+  display: grid;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: var(--gg-ink);
+  box-shadow: 0 2px 10px rgb(0 0 0 / 22%);
+  cursor: pointer;
+  /* Centre on the chosen point, and scale from there on hover. */
+  transform: translate(-50%, -50%);
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gg-grid__marker:hover,
+.gg-grid__marker:focus-visible {
+  transform: translate(-50%, -50%) scale(1.15);
+}
+
+.gg-grid__marker:focus-visible {
+  outline: 2px solid var(--gg-ink);
+  outline-offset: 3px;
+}
+
+.gg-grid__marker-plus,
+.gg-grid__marker-close {
+  display: grid;
+  place-items: center;
+  width: 55%;
+  height: 55%;
+}
+
+.gg-grid__marker svg { width: 100%; height: 100%; }
+
+/* "+" becomes "x" while that tile's popup is open. */
+.gg-grid__marker-close { display: none; }
+.gg-grid__marker[aria-expanded='true'] .gg-grid__marker-plus { display: none; }
+.gg-grid__marker[aria-expanded='true'] .gg-grid__marker-close { display: grid; }
+
+/* ----------------------------------------------------------------------
+   Popup
+   ---------------------------------------------------------------------- */
+.gg-popup {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  padding: 1rem;
+}
+
+.gg-popup[hidden] { display: none; }
+
+.gg-popup__backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: rgb(0 0 0 / 45%);
+}
+
+.gg-popup__dialog {
+  position: relative;
+  box-sizing: border-box;
+  width: min(100%, 40rem);
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  background-color: #ffffff;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .gg-popup__dialog { animation: gg-popup-in 0.25s cubic-bezier(0.22, 0.61, 0.36, 1); }
+}
+
+@keyframes gg-popup-in {
+  from { opacity: 0; transform: translateY(12px); }
+}
+
+.gg-popup__close {
+  position: absolute;
+  inset-block-start: 1rem;
+  inset-inline-end: 1rem;
+  width: 40px;
+  height: 40px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gg-ink);
+  cursor: pointer;
+}
+
+.gg-popup__close svg { width: 22px; height: 22px; }
+
+.gg-popup__head {
+  display: grid;
+  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
+  gap: clamp(1rem, 2.5vw, 1.75rem);
+  margin-block-end: 1.75rem;
+  padding-inline-end: 2.5rem;
+}
+
+.gg-popup__image {
+  width: 100%;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  object-fit: cover;
+  display: block;
+}
+
+.gg-popup__title {
+  margin: 0 0 0.75rem;
+  font-family: var(--gg-font);
+  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
+  font-weight: 400;
+  line-height: 1.2;
+}
+
+.gg-popup__price {
+  margin: 0 0 0.9rem;
+  font-family: var(--gg-font);
+  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
+  font-weight: 700;
+}
+
+.gg-popup__description {
+  margin: 0;
+  font-family: var(--gg-font);
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.gg-popup__option { margin-block-end: 1.5rem; }
+
+.gg-popup__option-label {
+  display: block;
+  margin-block-end: 0.6rem;
+  font-family: var(--gg-font);
+  font-size: 1rem;
+}
+
+/* Segmented swatches — one cell per value, colour chip on the leading edge. */
+.gg-popup__swatches {
+  display: flex;
+  border: 1px solid #d7d7d7;
+}
+
+.gg-popup__swatch {
+  flex: 1 1 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-height: 62px;
+  padding: 0 1rem;
+  border: 0;
+  border-inline-start: 1px solid #d7d7d7;
+  background: none;
+  color: var(--gg-ink);
+  font-family: var(--gg-font);
+  font-size: 1.05rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+.gg-popup__swatch:first-child { border-inline-start: 0; }
+
+/* The colour chip. Value name doubles as the CSS colour where it resolves. */
+.gg-popup__swatch::before {
+  content: '';
+  flex: none;
+  width: 10px;
+  align-self: stretch;
+  margin-inline-start: -1rem;
+  background-color: var(--gg-swatch, #cccccc);
+}
+
+.gg-popup__swatch[aria-pressed='true'] { font-weight: 500; }
+.gg-popup__swatch[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+/* Dropdown for the remaining options. */
+.gg-popup__select-wrap {
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 62px;
+  border: 1px solid #d7d7d7;
+}
+
+.gg-popup__select {
+  appearance: none;
+  min-height: 62px;
+  padding: 0 1rem;
+  border: 0;
+  background: none;
+  color: var(--gg-ink);
+  font-family: var(--gg-font);
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+
+.gg-popup__select:focus-visible { outline: 2px solid var(--gg-ink); outline-offset: -2px; }
+
+.gg-popup__select-arrow {
+  display: grid;
+  place-items: center;
+  border-inline-start: 1px solid #d7d7d7;
+  pointer-events: none;
+}
+
+.gg-popup__select-arrow svg { width: 18px; height: 18px; }
+
+.gg-popup__atc {
+  width: 100%;
+  justify-content: center;
+  gap: 2.5rem;
+  min-height: 68px;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+}
+
+.gg-popup__atc[disabled] { opacity: 0.5; cursor: not-allowed; }
+
+.gg-popup__status {
+  margin: 0.75rem 0 0;
+  font-family: var(--gg-font);
+  font-size: 0.85rem;
+  min-height: 1.2em;
+}
+
+.gg-popup__status--error { color: #c0392b; }
+
+/* Locks background scroll while the popup is open. */
+body.gg-popup-open { overflow: hidden; }
+
+/* ----------------------------------------------------------------------
+   Responsive
+   ---------------------------------------------------------------------- */
+@media screen and (max-width: 989px) {
+  .gg-grid__items { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media screen and (max-width: 749px) {
+  .gg-grid__items { grid-template-columns: 1fr; }
+
+  .gg-popup { padding: 0; }
+
+  .gg-popup__dialog {
+    width: 100%;
+    max-height: 100vh;
+    min-height: 100vh;
+  }
+
+  /* Image above the copy once there is no room for two columns. */
+  .gg-popup__head {
+    grid-template-columns: 1fr;
+    padding-inline-end: 2.5rem;
+  }
+
+  .gg-popup__image { max-width: 220px; }
+
+  .gg-popup__atc { gap: 1.5rem; }
+}
