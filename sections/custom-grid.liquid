@@ -27,11 +27,17 @@
   assign font_medium = s.font | font_modify: 'weight', '500'
 -%}
 
-{{ s.font | font_face: font_display: 'swap' }}
-{%- if font_medium -%}
-  {{ font_medium | font_face: font_display: 'swap' }}
-{%- endif -%}
-{{ s.heading_font | font_face: font_display: 'swap' }}
+{%- comment -%}
+  font_face emits a bare @font-face rule, so it must sit inside a style tag —
+  otherwise the CSS prints onto the page as text.
+{%- endcomment -%}
+{% style %}
+  {{ s.font | font_face: font_display: 'swap' }}
+  {%- if font_medium -%}
+    {{ font_medium | font_face: font_display: 'swap' }}
+  {%- endif -%}
+  {{ s.heading_font | font_face: font_display: 'swap' }}
+{% endstyle %}
 
 <gift-guide-grid
   class="gg-grid"

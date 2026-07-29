@@ -48,10 +48,16 @@
   assign font_medium = s.font | font_modify: 'weight', '500'
 -%}
 
-{{ s.font | font_face: font_display: 'swap' }}
-{%- if font_medium -%}
-  {{ font_medium | font_face: font_display: 'swap' }}
-{%- endif -%}
+{%- comment -%}
+  font_face emits a bare @font-face rule, so it must sit inside a style tag —
+  otherwise the CSS prints onto the page as text.
+{%- endcomment -%}
+{% style %}
+  {{ s.font | font_face: font_display: 'swap' }}
+  {%- if font_medium -%}
+    {{ font_medium | font_face: font_display: 'swap' }}
+  {%- endif -%}
+{% endstyle %}
 
 {%- comment -%}
   The top band is above the fold and carries the page's LCP, so it is fetched at
