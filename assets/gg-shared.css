@@ -1,0 +1,121 @@
+/**
+ * Gift Guide — shared primitives.
+ *
+ * Loaded by any section that uses snippets/gg-button.liquid. Both sections
+ * emit the same <link>, so the browser makes a single request for it.
+ */
+
+/* --------------------------------------------------------------------------
+   Typography.
+
+   Each section sets --gg-font from its own font_picker setting, so the page
+   carries its own type and does not depend on — or alter — the store's global
+   theme font. Shopify hosts and serves the file, so there is no @font-face to
+   maintain and no third-party connection.
+
+   The value below is only a safety net for when a section forgets to set it.
+   -------------------------------------------------------------------------- */
+:root {
+  --gg-font: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
+}
+
+/*
+ * Sized by the caller through these variables, because the Figma gives each
+ * button an exact box: label pinned to the leading padding, arrow to the
+ * trailing one, which `space-between` reproduces without magic numbers.
+ */
+.gg-btn {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  box-sizing: border-box;
+  width: var(--gg-btn-w, auto);
+  height: var(--gg-btn-h, 44px);
+  padding-inline: var(--gg-btn-pl, 24px) var(--gg-btn-pr, 22px);
+  overflow: hidden;
+  border: 0;
+  font-family: var(--gg-font);
+  font-size: var(--gg-btn-fs, 16px);
+  font-weight: 400;
+  line-height: 20.48px;
+  letter-spacing: 0;
+  text-transform: uppercase;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  isolation: isolate;
+}
+
+/*
+ * The fill layer. Scaled on the X axis from the leading edge — a transform,
+ * so hovering never triggers layout.
+ */
+.gg-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gg-btn__label,
+.gg-btn__arrow {
+  transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+.gg-btn__arrow {
+  width: var(--gg-arrow-w, 24px);
+  height: 12px;
+  flex: none;
+}
+
+.gg-btn:hover .gg-btn__label { transform: translateX(-2px); }
+.gg-btn:hover .gg-btn__arrow { transform: translateX(6px); }
+.gg-btn:hover::before { transform: scaleX(1); }
+
+.gg-btn:focus-visible {
+  outline: 2px solid currentcolor;
+  outline-offset: 3px;
+}
+
+/* Accent — yellow, inverting to ink on hover. */
+.gg-btn--accent {
+  background-color: var(--gg-accent, #f9f24e);
+  color: var(--gg-ink, #000);
+}
+
+.gg-btn--accent::before { background-color: var(--gg-ink, #000); }
+.gg-btn--accent:hover { color: var(--gg-accent, #f9f24e); }
+
+/* Solid — ink, inverting to accent on hover. */
+.gg-btn--solid {
+  background-color: var(--gg-ink, #000);
+  color: #fff;
+}
+
+.gg-btn--solid::before { background-color: var(--gg-accent, #f9f24e); }
+.gg-btn--solid:hover { color: var(--gg-ink, #000); }
+
+.gg-btn[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.gg-btn[disabled]:hover::before { transform: scaleX(0); }
+
+/* Keep the colour change, drop the movement. */
+@media (prefers-reduced-motion: reduce) {
+  .gg-btn::before,
+  .gg-btn__label,
+  .gg-btn__arrow {
+    transition: none;
+  }
+
+  .gg-btn:hover .gg-btn__label,
+  .gg-btn:hover .gg-btn__arrow {
+    transform: none;
+  }
+}

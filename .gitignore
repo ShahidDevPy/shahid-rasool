@@ -1,0 +1,14 @@
+# Shopify CLI
+.shopify/
+
+# Dependencies
+node_modules/
+
+# OS / editor noise
+.DS_Store
+Thumbs.db
+*.swp
+
+# Claude Code local session/config data — never push
+.claude/
+CHECKLIST.md

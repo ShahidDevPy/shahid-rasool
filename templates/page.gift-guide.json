@@ -1,0 +1,47 @@
+{
+  "sections": {
+    "banner": {
+      "type": "custom-banner",
+      "settings": {}
+    },
+    "grid": {
+      "type": "custom-grid",
+      "blocks": {
+        "product-1": {
+          "type": "product",
+          "settings": { "marker_x": 62, "marker_y": 56 }
+        },
+        "product-2": {
+          "type": "product",
+          "settings": { "marker_x": 85, "marker_y": 52 }
+        },
+        "product-3": {
+          "type": "product",
+          "settings": { "marker_x": 63, "marker_y": 21 }
+        },
+        "product-4": {
+          "type": "product",
+          "settings": { "marker_x": 72, "marker_y": 18 }
+        },
+        "product-5": {
+          "type": "product",
+          "settings": { "marker_x": 51, "marker_y": 26 }
+        },
+        "product-6": {
+          "type": "product",
+          "settings": { "marker_x": 76, "marker_y": 39 }
+        }
+      },
+      "block_order": [
+        "product-1",
+        "product-2",
+        "product-3",
+        "product-4",
+        "product-5",
+        "product-6"
+      ],
+      "settings": {}
+    }
+  },
+  "order": ["banner", "grid"]
+}

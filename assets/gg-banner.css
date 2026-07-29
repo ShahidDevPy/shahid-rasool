@@ -1,0 +1,240 @@
+/**
+ * Custom Banner section styles.
+ * Paired with sections/custom-banner.liquid.
+ */
+
+.gg-banner {
+  /* Fallbacks keep the section self-contained if the vars are ever absent. */
+  --gg-accent: #fff544;
+  --gg-ink: #000000;
+  --gg-bar-bg: #f5f5f5;
+  --gg-strip-bg: #f5f5f5;
+  --gg-panel-width: 38.2%;
+  /* 67px of a 1440 frame — kept proportional so the copy stays on the
+     same optical margin as the artwork at other widths. */
+  --gg-gutter: clamp(1.25rem, 4.65vw, 67px);
+
+  color: var(--gg-ink);
+  background-color: #ffffff;
+}
+
+/* ----------------------------------------------------------------------
+   1. Utility bar
+   ---------------------------------------------------------------------- */
+.gg-banner__bar {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 1rem;
+  min-height: 64px;
+  /* Figma Frame 1956: padding 10px 50px. Note the bar's 50px inset is
+     independent of the hero's 67px gutter. */
+  padding: 10px var(--gg-bar-end, 50px);
+  background-color: var(--gg-bar-bg);
+}
+
+.gg-banner__bar--sticky {
+  position: sticky;
+  top: 0;
+  /* Above the hero image, below any theme drawer/modal layer. */
+  z-index: 20;
+}
+
+.gg-banner__logo {
+  align-self: center;
+  font-family: var(--gg-font);
+  /* The logo is outlined vectors in the Figma (151.44 x 19), not a text
+     layer, so there is no type spec to copy. These values reproduce that
+     measured box in Jost while keeping the string editable, which the brief
+     requires. */
+  font-size: 22px;
+  line-height: 19px;
+  font-weight: 500;
+  letter-spacing: 0.107em;
+  text-transform: uppercase;
+  text-decoration: none;
+  color: inherit;
+  white-space: nowrap;
+}
+
+/* Typography taken from the Figma spec for this string. */
+.gg-banner__tagline {
+  align-self: center;
+  margin: 0;
+  font-family: var(--gg-font);
+  /* Figma: 260 x 14 @ Jost 400 / 16px / line-height 13.42px. */
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.42px;
+  letter-spacing: 0;
+  text-align: center;
+}
+
+/* ----------------------------------------------------------------------
+   2. Hero
+   ---------------------------------------------------------------------- */
+.gg-banner__hero {
+  position: relative;
+}
+
+.gg-banner__art {
+  display: block;
+  /* Intrinsic width/height on the tags reserve the space; these keep the
+     artwork fluid without ever exceeding its row. */
+  max-width: 100%;
+  height: auto;
+}
+
+/* Full-bleed band across the top of the hero. */
+.gg-banner__art--top {
+  width: 100%;
+}
+
+/*
+  Copy on the left, the narrower artwork on the right.
+
+  Figma places the lower frame at left 550 of 1440 (38.2%) and top 442 — while
+  the top band runs 64..454. The two therefore OVERLAP by 12px, which the
+  negative margin reproduces. Without it the lower band sits 12px too low and
+  every measurement below drifts.
+*/
+.gg-banner__lower {
+  display: grid;
+  grid-template-columns: var(--gg-panel-width) 1fr;
+  align-items: end;
+  margin-block-start: -12px;
+}
+
+.gg-banner__art--bottom {
+  width: 100%;
+  align-self: end;
+}
+
+.gg-banner__panel {
+  box-sizing: border-box;
+  /* Figma: heading top 489 (47px into the band), button bottom 793 (51px
+     clear of it). No trailing padding — the 483px copy measure ends exactly
+     where the artwork begins at x=550. */
+  padding: clamp(1.75rem, 3.26vw, 47px) 0
+    clamp(1.75rem, 3.54vw, 51px) var(--gg-gutter);
+}
+
+.gg-banner__heading {
+  margin: 0;
+  font-family: var(--gg-font);
+  /* Figma: 459 x 70 @ Jost 500 / 70px / line-height 100%. */
+  font-size: clamp(2.75rem, 4.86vw, 70px);
+  font-weight: 500;
+  line-height: 100%;
+  letter-spacing: 0;
+}
+
+.gg-banner__body {
+  font-family: var(--gg-font);
+  /* Figma: 483 x 84 @ Jost 400 / 20px / line-height 140%. */
+  max-width: 483px;
+  font-size: clamp(1rem, 1.39vw, 20px);
+  font-weight: 400;
+  line-height: 140%;
+  letter-spacing: 0;
+}
+
+.gg-banner__body > :first-child { margin-block-start: 0; }
+.gg-banner__body > :last-child { margin-block-end: 0; }
+
+.gg-banner__heading + .gg-banner__body { margin-block-start: 50px; }
+
+/* Figma: SHOP NOW 220 x 50. Label sits at left 55.07, arrow 25.5 wide
+   ending 23px from the trailing edge. */
+.gg-banner__panel .gg-btn {
+  --gg-btn-w: 220px;
+  --gg-btn-h: 50px;
+  --gg-btn-pl: 55px;
+  --gg-btn-pr: 23px;
+  --gg-arrow-w: 25.5px;
+
+  margin-block-start: 50px;
+}
+
+/* Figma: CHOOSE GIFT 207 x 44. Label sits at left 41, arrow 24 wide
+   ending 22px from the trailing edge. */
+.gg-banner__bar .gg-btn {
+  --gg-btn-w: 207px;
+  --gg-btn-h: 44px;
+  --gg-btn-pl: 41px;
+  --gg-btn-pr: 22px;
+  --gg-arrow-w: 24px;
+
+  /* The bar's third column is 1fr, so without this the fixed-width button
+     would sit at the column's start instead of against the right edge. */
+  justify-self: end;
+  align-self: center;
+}
+
+/* ----------------------------------------------------------------------
+   3. Strip
+   ---------------------------------------------------------------------- */
+.gg-banner__strip {
+  display: grid;
+  place-items: center;
+  min-height: 34px;
+  /* Figma Frame 1957: hug 34px, padding 10px 50px. */
+  padding: 10px var(--gg-bar-end, 50px);
+  background-color: var(--gg-strip-bg);
+  font-family: var(--gg-font);
+  /* Figma: 451 x 14 @ Jost 400 / 16px / line-height 13.42px. */
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 13.42px;
+  letter-spacing: 0;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+
+/* ----------------------------------------------------------------------
+   Mobile
+   ---------------------------------------------------------------------- */
+@media screen and (max-width: 749px) {
+  /* Set on the root so the strip inherits the same inset as the bar. */
+  .gg-banner {
+    --gg-bar-end: 16px;
+  }
+
+  /* Tagline is the least critical element — drop it before the CTA. */
+  .gg-banner__bar {
+    grid-template-columns: 1fr auto;
+  }
+
+  .gg-banner__tagline { display: none; }
+
+  /* Let the buttons shrink to the viewport rather than hold their desktop box. */
+  .gg-banner .gg-btn {
+    --gg-btn-w: auto;
+    --gg-btn-h: 44px;
+    --gg-btn-pl: 18px;
+    --gg-btn-pr: 16px;
+    --gg-btn-fs: 12px;
+
+    gap: 1.25rem;
+  }
+
+  .gg-banner__heading + .gg-banner__body,
+  .gg-banner__panel .gg-btn { margin-block-start: 1.5rem; }
+
+  /*
+    Stacking beats overlaying on narrow screens: the lower band keeps its own
+    strip of artwork and the copy gets the full width beneath it.
+  */
+  /* One column: copy first, then the artwork beneath it. The desktop overlap
+     would collide with the copy once stacked, so it is removed here. */
+  .gg-banner__lower {
+    grid-template-columns: 1fr;
+    margin-block-start: 0;
+  }
+
+  .gg-banner__panel {
+    width: 100%;
+    padding: 1.75rem var(--gg-gutter) 2.25rem;
+  }
+}

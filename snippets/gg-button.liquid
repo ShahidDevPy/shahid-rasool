@@ -1,0 +1,40 @@
+{%- comment -%}
+  Reusable CTA button: label + trailing arrow, with the sweep/slide hover
+  animation. Styles live in assets/gg-shared.css so any section can use this.
+
+  Renders an <a> when `href` is given, otherwise a <button>.
+
+  Usage:
+    {% render 'gg-button', label: 'SHOP NOW', href: '/collections/all' %}
+    {% render 'gg-button', label: 'CHOOSE GIFT', href: url, variant: 'accent' %}
+    {% render 'gg-button', label: 'ADD TO CART', variant: 'solid',
+                           class: 'gg-popup__atc', attrs: 'data-gg-add' %}
+
+  Params:
+    label       - button text (required)
+    href        - optional; renders an anchor when present
+    variant     - 'solid' (default) | 'accent'
+    class       - optional extra classes
+    attrs       - optional raw attributes string
+    label_attrs - optional raw attributes for the label span
+{%- endcomment -%}
+
+{%- liquid
+  assign btn_variant = variant | default: 'solid'
+  assign btn_class = class | default: ''
+-%}
+
+{%- capture gg_button_inner -%}
+  <span class="gg-btn__label" {{ label_attrs }}>{{ label }}</span>
+  {%- render 'gg-icon', name: 'arrow', class: 'gg-btn__arrow' -%}
+{%- endcapture -%}
+
+{%- if href != blank -%}
+  <a class="gg-btn gg-btn--{{ btn_variant }} {{ btn_class }}" href="{{ href }}" {{ attrs }}>
+    {{- gg_button_inner -}}
+  </a>
+{%- else -%}
+  <button type="button" class="gg-btn gg-btn--{{ btn_variant }} {{ btn_class }}" {{ attrs }}>
+    {{- gg_button_inner -}}
+  </button>
+{%- endif -%}
