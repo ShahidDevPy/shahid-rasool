@@ -10,8 +10,7 @@
   --gg-bar-bg: #f5f5f5;
   --gg-strip-bg: #f5f5f5;
   --gg-panel-width: 38.2%;
-  /* 67px of a 1440 frame — kept proportional so the copy stays on the
-     same optical margin as the artwork at other widths. */
+  /* 67px of a 1440 frame, kept proportional across widths. */
   --gg-gutter: clamp(1.25rem, 4.65vw, 67px);
 
   color: var(--gg-ink);
@@ -23,6 +22,7 @@
    ---------------------------------------------------------------------- */
 .gg-banner__bar {
   display: grid;
+  /* custom element — no default display of its own */
   grid-template-columns: 1fr auto 1fr;
   align-items: stretch;
   gap: 1rem;
@@ -40,13 +40,60 @@
   z-index: 20;
 }
 
+.gg-banner__menu {
+  display: none;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--gg-ink);
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+}
+
+/*
+  Figma: 18x10 hamburger, Smart Animate to an X over 300ms ease-out. Since
+  18 * cos(45deg) = 12.7279 — exactly the X's measured box — the X is these
+  same bars rotated, not a second asset. Transform/opacity only, so the fold
+  never touches layout.
+*/
+.gg-icon__bar {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: transform 300ms ease-out, opacity 300ms ease-out;
+}
+
+.gg-banner__menu[aria-expanded='true'] .gg-icon__bar--1 {
+  transform: translateY(4px) rotate(45deg);
+}
+
+.gg-banner__menu[aria-expanded='true'] .gg-icon__bar--2 {
+  opacity: 0;
+}
+
+.gg-banner__menu[aria-expanded='true'] .gg-icon__bar--3 {
+  transform: translateY(-4px) rotate(-45deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-icon__bar { transition: none; }
+}
+
+/* Above the breakpoint the wrapper dissolves, so its children join the bar's grid. */
+.gg-banner__menu-panel {
+  display: contents;
+}
+
+.gg-banner__strip-text--mobile { display: none; }
+
 .gg-banner__logo {
   align-self: center;
   font-family: var(--gg-font);
-  /* The logo is outlined vectors in the Figma (151.44 x 19), not a text
-     layer, so there is no type spec to copy. These values reproduce that
-     measured box in Jost while keeping the string editable, which the brief
-     requires. */
+  /* Outlined vectors in the Figma (151.44 x 19), not a text layer — so there is
+     no type spec to copy. These reproduce that box in Jost while keeping the
+     string customizer-editable. */
   font-size: 22px;
   line-height: 19px;
   font-weight: 500;
@@ -57,7 +104,6 @@
   white-space: nowrap;
 }
 
-/* Typography taken from the Figma spec for this string. */
 .gg-banner__tagline {
   align-self: center;
   margin: 0;
@@ -79,8 +125,7 @@
 
 .gg-banner__art {
   display: block;
-  /* Intrinsic width/height on the tags reserve the space; these keep the
-     artwork fluid without ever exceeding its row. */
+  /* width/height on the tags reserve the space; these keep it fluid. */
   max-width: 100%;
   height: auto;
 }
@@ -91,12 +136,9 @@
 }
 
 /*
-  Copy on the left, the narrower artwork on the right.
-
-  Figma places the lower frame at left 550 of 1440 (38.2%) and top 442 — while
-  the top band runs 64..454. The two therefore OVERLAP by 12px, which the
-  negative margin reproduces. Without it the lower band sits 12px too low and
-  every measurement below drifts.
+  Copy left, narrower artwork right. Figma puts the lower frame at left 550 of
+  1440 (38.2%) and top 442, while the top band runs 64..454 — so they OVERLAP
+  by 12px. Without the negative margin every measurement below drifts down.
 */
 .gg-banner__lower {
   display: grid;
@@ -193,48 +235,139 @@
 
 
 /* ----------------------------------------------------------------------
+   Tablet — still side by side, but the 38.2% copy column gets cramped, so it
+   takes a larger share. Applied to grid-template-columns rather than
+   --gg-panel-width, which the section writes inline.
+   ---------------------------------------------------------------------- */
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  .gg-banner__lower { grid-template-columns: 46% 1fr; }
+
+  .gg-banner__bar { --gg-bar-end: 24px; }
+
+  .gg-banner__heading { font-size: clamp(2rem, 4.4vw, 3rem); }
+}
+
+/* ----------------------------------------------------------------------
    Mobile
    ---------------------------------------------------------------------- */
 @media screen and (max-width: 749px) {
-  /* Set on the root so the strip inherits the same inset as the bar. */
+  /*
+    Mobile (Figma frame 375 x 520). Not a narrowed desktop but a different
+    composition: the tagline and accent CTA move behind the hamburger, the top
+    art band is dropped, copy centres, and SHOP NOW overlays the artwork.
+  */
   .gg-banner {
-    --gg-bar-end: 16px;
+    --gg-bar-end: 20px;
   }
 
-  /* Tagline is the least critical element — drop it before the CTA. */
   .gg-banner__bar {
-    grid-template-columns: 1fr auto;
+    /* Row 1: hamburger, centred logo, matching spacer — both 44px, the
+       trigger's touch target, so the logo sits on the true centre line.
+       Row 2: the menu panel. */
+    grid-template-columns: 44px 1fr 44px;
+    align-items: center;
+    gap: 0;
+    row-gap: 0;
+    padding-inline: 6px;
   }
 
-  .gg-banner__tagline { display: none; }
+  .gg-banner__menu { display: flex; }
 
-  /* Let the buttons shrink to the viewport rather than hold their desktop box. */
-  .gg-banner .gg-btn {
-    --gg-btn-w: auto;
-    --gg-btn-h: 44px;
-    --gg-btn-pl: 18px;
-    --gg-btn-pr: 16px;
-    --gg-btn-fs: 12px;
-
-    gap: 1.25rem;
+  .gg-banner__logo {
+    grid-column: 2;
+    justify-self: center;
+    font-size: 20px;
+    letter-spacing: 0.1em;
   }
-
-  .gg-banner__heading + .gg-banner__body,
-  .gg-banner__panel .gg-btn { margin-block-start: 1.5rem; }
 
   /*
-    Stacking beats overlaying on narrow screens: the lower band keeps its own
-    strip of artwork and the copy gets the full width beneath it.
+    The panel becomes a real row spanning the bar, collapsed until the trigger
+    reports itself expanded. Driven entirely by aria-expanded, so the attribute
+    is the single source of truth for both styling and assistive tech.
   */
-  /* One column: copy first, then the artwork beneath it. The desktop overlap
-     would collide with the copy once stacked, so it is removed here. */
+  .gg-banner__menu-panel {
+    display: none;
+    grid-column: 1 / -1;
+    justify-items: center;
+    gap: 20px;
+    padding-block: 22px 26px;
+  }
+
+  .gg-banner__menu[aria-expanded='true'] ~ .gg-banner__menu-panel {
+    display: grid;
+  }
+
+  .gg-banner__tagline {
+    align-self: auto;
+    font-size: 16px;
+    line-height: 20.48px;
+  }
+
+  /* Figma: mobile CHOOSE GIFT 244 x 44, label at left 57.9, arrow 28.29 wide
+     ending 26px from the trailing edge. */
+  .gg-banner__bar .gg-btn {
+    --gg-btn-w: 244px;
+    --gg-btn-h: 44px;
+    --gg-btn-pl: 58px;
+    --gg-btn-pr: 26px;
+    --gg-arrow-w: 28.29px;
+
+    justify-self: center;
+  }
+
+  /* The design opens straight into the heading — no art above it. */
+  .gg-banner__art--top { display: none; }
+
   .gg-banner__lower {
-    grid-template-columns: 1fr;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    grid-template-columns: none;
     margin-block-start: 0;
   }
 
   .gg-banner__panel {
     width: 100%;
-    padding: 1.75rem var(--gg-gutter) 2.25rem;
+    padding: 32px 24px 20px;
+    text-align: center;
   }
+
+  .gg-banner__heading {
+    font-size: 34px;
+    line-height: 1.1;
+  }
+
+  .gg-banner__body {
+    /* Centred and measure-limited so it breaks like the design. */
+    max-width: 30ch;
+    margin-inline: auto;
+    font-size: 16px;
+  }
+
+  .gg-banner__heading + .gg-banner__body { margin-block-start: 18px; }
+
+  /*
+    SHOP NOW overlays the artwork. Absolute against .gg-banner__lower, so it
+    stays put regardless of the illustration's height.
+  */
+  .gg-banner__panel .gg-btn {
+    --gg-btn-w: 190px;
+    --gg-btn-h: 46px;
+    --gg-btn-pl: 34px;
+    --gg-btn-pr: 20px;
+    --gg-arrow-w: 24px;
+
+    position: absolute;
+    inset-block-end: 34px;
+    inset-inline-start: 50%;
+    transform: translateX(-50%);
+    margin-block-start: 0;
+    z-index: 1;
+  }
+
+  .gg-banner__art--bottom { width: 100%; }
+
+  /* Swap to the shorter strip line. */
+  .gg-banner__strip-text { display: none; }
+  .gg-banner__strip-text--mobile { display: block; }
 }

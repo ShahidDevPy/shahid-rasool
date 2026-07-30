@@ -5,25 +5,20 @@
  * emit the same <link>, so the browser makes a single request for it.
  */
 
-/* --------------------------------------------------------------------------
-   Typography.
-
-   Each section sets --gg-font from its own font_picker setting, so the page
-   carries its own type and does not depend on — or alter — the store's global
-   theme font. Shopify hosts and serves the file, so there is no @font-face to
-   maintain and no third-party connection.
-
-   The value below is only a safety net for when a section forgets to set it.
-   -------------------------------------------------------------------------- */
+/*
+  Each section sets --gg-font from its own font_picker, so the page carries its
+  own type without altering the store's global theme font. The value below is
+  only a safety net for when a section forgets to set it.
+*/
 :root {
   --gg-font: 'Jost', 'Futura', 'Century Gothic', system-ui, sans-serif;
 }
 
 /*
- * Sized by the caller through these variables, because the Figma gives each
- * button an exact box: label pinned to the leading padding, arrow to the
- * trailing one, which `space-between` reproduces without magic numbers.
- */
+  Sized by the caller through these variables: the Figma gives each button an
+  exact box, with the label on the leading padding and the arrow on the
+  trailing one — which `space-between` reproduces without magic numbers.
+*/
 .gg-btn {
   position: relative;
   display: inline-flex;
@@ -47,10 +42,7 @@
   isolation: isolate;
 }
 
-/*
- * The fill layer. Scaled on the X axis from the leading edge — a transform,
- * so hovering never triggers layout.
- */
+/* Fill layer, scaled from the leading edge — a transform, so no layout on hover. */
 .gg-btn::before {
   content: '';
   position: absolute;
