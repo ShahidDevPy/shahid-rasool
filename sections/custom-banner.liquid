@@ -5,10 +5,16 @@
   Built from scratch for the Ecomexperts test. Deliberately does NOT reuse any
   theme section, block, snippet or `@theme/*` JS module.
 
-  Structure (matches the Figma frame top-to-bottom):
+  Desktop (Figma 1440 x 878), top to bottom:
     1. Utility bar .... logo · tagline · accent CTA          (optionally sticky)
     2. Hero .......... full-width art band, then copy beside a narrower band
     3. Strip ......... single centred line of small-caps text
+
+  Mobile (Figma 375 x 520) is a different composition, not a narrowed desktop:
+    - hamburger replaces the tagline and accent CTA; logo centres
+    - the top art band is dropped entirely
+    - copy centres, and SHOP NOW overlays the artwork
+    - a shorter strip line, and its own illustration via <picture>
 
   Notes:
   - No JavaScript. Both button animations are pure CSS transitions, so this
@@ -21,6 +27,11 @@
 
 {{ 'gg-shared.css' | asset_url | stylesheet_tag }}
 {{ 'gg-banner.css' | asset_url | stylesheet_tag }}
+{%- comment -%}
+  The only script this section loads: a ~40-line menu toggle. Deferred by being
+  a module, so it never blocks rendering.
+{%- endcomment -%}
+<script src="{{ 'gg-banner-menu.js' | asset_url }}" type="module" fetchpriority="low"></script>
 
 {%- liquid
   assign s = section.settings
@@ -36,6 +47,13 @@
   assign art_bottom_url = 'banner-frame.svg' | asset_url
   if s.art_bottom_image != blank
     assign art_bottom_url = s.art_bottom_image | image_url: width: 1800
+  endif
+
+  # Mobile ships its own illustration (375x264) rather than a scaled-down
+  # desktop export.
+  assign art_mobile_url = 'banner-mobile-frame.svg' | asset_url
+  if s.art_mobile_image != blank
+    assign art_mobile_url = s.art_mobile_image | image_url: width: 800
   endif
 
   # Resolved up front: the render tag cannot take filtered arguments.
@@ -60,11 +78,21 @@
 {% endstyle %}
 
 {%- comment -%}
-  The top band is above the fold and carries the page's LCP, so it is fetched at
-  high priority rather than waiting on layout. The lower band is not preloaded —
-  it is further down and would only compete for bandwidth.
+  The top band is the desktop LCP, so it is fetched at high priority rather than
+  waiting on layout. `media` confines that to widths where the band actually
+  renders — without it, phones would preload artwork they never show.
+
+  Written as a raw link because preload_tag has no media parameter.
 {%- endcomment -%}
-{{ art_top_url | preload_tag: as: 'image' }}
+{% # theme-check-disable AssetPreload %}
+<link
+  rel="preload"
+  href="{{ art_top_url }}"
+  as="image"
+  media="(min-width: 750px)"
+  fetchpriority="high"
+>
+{% # theme-check-enable AssetPreload %}
 
 
 
@@ -79,26 +107,54 @@
     --gg-font: {{ s.font.family }}, {{ s.font.fallback_families }};
   "
 >
-  {%- comment -%} 1. Utility bar {%- endcomment -%}
-  <div class="gg-banner__bar{% if s.sticky_bar %} gg-banner__bar--sticky{% endif %}">
+  {%- comment -%}
+    1. Utility bar.
+
+    On desktop this is one row: logo · tagline · accent CTA. On mobile the
+    tagline and CTA collapse behind a hamburger and reappear in a panel beneath
+    the bar.
+
+    The two are the same markup either way — the wrapper is `display: contents`
+    above the breakpoint, so its children sit directly in the bar's grid and the
+    desktop layout is untouched. No duplicated markup, nothing hidden twice.
+  {%- endcomment -%}
+  <gg-banner-menu class="gg-banner__bar{% if s.sticky_bar %} gg-banner__bar--sticky{% endif %}">
+    <button
+      type="button"
+      class="gg-banner__menu"
+      data-gg-menu-toggle
+      aria-label="Menu"
+      aria-expanded="false"
+    >
+      {%- comment -%}
+        Single icon, three bars. The Figma "closed" and "open" states are one
+        Smart Animate morph (see snippets/gg-icon.liquid), so the fold is done
+        with CSS transform/opacity on these same bars, keyed off aria-expanded
+        — not a crossfade between two separate icons.
+      {%- endcomment -%}
+      {%- render 'gg-icon', name: 'hamburger', class: 'gg-banner__menu-icon' -%}
+    </button>
+
     {%- if s.logo_text != blank -%}
       <a class="gg-banner__logo" href="{{ s.logo_link | default: routes.root_url }}">
         {{- s.logo_text -}}
       </a>
     {%- endif -%}
 
-    {%- if s.tagline != blank -%}
-      <p class="gg-banner__tagline">{{ s.tagline }}</p>
-    {%- endif -%}
+    <div class="gg-banner__menu-panel" data-gg-menu-panel>
+      {%- if s.tagline != blank -%}
+        <p class="gg-banner__tagline">{{ s.tagline }}</p>
+      {%- endif -%}
 
-    {%- if s.bar_button_label != blank -%}
-      {%- render 'gg-button',
-        label: s.bar_button_label,
-        href: bar_button_href,
-        variant: 'accent'
-      -%}
-    {%- endif -%}
-  </div>
+      {%- if s.bar_button_label != blank -%}
+        {%- render 'gg-button',
+          label: s.bar_button_label,
+          href: bar_button_href,
+          variant: 'accent'
+        -%}
+      {%- endif -%}
+    </div>
+  </gg-banner-menu>
 
   {%- comment -%}
     2. Hero — a full-width band above, then copy beside a narrower band.
@@ -107,15 +163,29 @@
     reserve their space and the artwork causes no layout shift.
   {%- endcomment -%}
   <div class="gg-banner__hero">
-    <img
-      class="gg-banner__art gg-banner__art--top"
-      src="{{ art_top_url }}"
-      alt=""
-      width="1440"
-      height="390"
-      loading="eager"
-      fetchpriority="high"
-    >
+    {%- comment -%}
+      The top band does not exist in the mobile design, and a hidden <img> is
+      still downloaded. Gating it behind a min-width source means phones match
+      no candidate and fall back to the inline 1x1 below — 43 bytes, no request
+      — while desktop loads the real artwork exactly as before.
+    {%- endcomment -%}
+    <picture>
+      <source
+        media="(min-width: 750px)"
+        srcset="{{ art_top_url }}"
+        width="1440"
+        height="390"
+      >
+      <img
+        class="gg-banner__art gg-banner__art--top"
+        src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7"
+        alt=""
+        width="1440"
+        height="390"
+        loading="eager"
+        fetchpriority="high"
+      >
+    </picture>
 
     <div class="gg-banner__lower">
       <div class="gg-banner__panel">
@@ -136,21 +206,47 @@
         {%- endif -%}
       </div>
 
-      <img
-        class="gg-banner__art gg-banner__art--bottom"
-        src="{{ art_bottom_url }}"
-        alt=""
-        width="890"
-        height="402"
-        loading="lazy"
-      >
+      {%- comment -%}
+        Art direction, not just resizing: the mobile design uses a different
+        illustration. <picture> lets the browser fetch only the one that
+        matches, so phones never download the 890px desktop export.
+      {%- endcomment -%}
+      <picture>
+        {%- comment -%}
+          The source carries its own intrinsic size (375x264 vs the desktop's
+          890x402). Without it the img's attributes would impose the desktop
+          aspect ratio on the mobile artwork and squash it.
+        {%- endcomment -%}
+        <source
+          media="(max-width: 749px)"
+          srcset="{{ art_mobile_url }}"
+          width="375"
+          height="264"
+        >
+        <img
+          class="gg-banner__art gg-banner__art--bottom"
+          src="{{ art_bottom_url }}"
+          alt=""
+          width="890"
+          height="402"
+          loading="lazy"
+        >
+      </picture>
     </div>
   </div>
 
-  {%- comment -%} 3. Strip {%- endcomment -%}
+  {%- comment -%}
+    3. Strip. The design shortens this line on mobile, so both are rendered and
+    CSS picks one — no JS, and no layout shift from swapping text after load.
+  {%- endcomment -%}
   {%- if s.strip_text != blank -%}
     <div class="gg-banner__strip">
-      <span>{{ s.strip_text }}</span>
+      <span class="gg-banner__strip-text">{{ s.strip_text }}</span>
+      {%- if s.strip_text_mobile != blank -%}
+        <span class="gg-banner__strip-text gg-banner__strip-text--mobile">
+          {{- s.strip_text_mobile -}}
+        </span>
+      {%- endif -%}
     </div>
   {%- endif -%}
 </div>
@@ -251,6 +347,12 @@
       "info": "Optional. Defaults to assets/banner-frame.svg (890x402)."
     },
     {
+      "type": "image_picker",
+      "id": "art_mobile_image",
+      "label": "Mobile artwork",
+      "info": "Optional. Defaults to assets/banner-mobile-frame.svg (375x264). Phones fetch only this, never the desktop export."
+    },
+    {
       "type": "range",
       "id": "panel_width",
       "label": "Copy column width",
@@ -270,6 +372,13 @@
       "id": "strip_text",
       "label": "Strip text",
       "default": "Sustainable, ethically made clothes in sizes XXS to 6XL"
+    },
+    {
+      "type": "text",
+      "id": "strip_text_mobile",
+      "label": "Strip text (mobile)",
+      "info": "Shorter line used under 750px. Falls back to the desktop text if blank.",
+      "default": "Sustainable, ethically made activewear"
     },
     {
       "type": "header",

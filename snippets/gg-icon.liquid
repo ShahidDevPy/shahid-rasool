@@ -37,4 +37,19 @@
     <svg class="gg-icon {{ icon_class }}" viewBox="0 0 20 20" aria-hidden="true" focusable="false">
       <path d="M5 8l5 5 5-5" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>
     </svg>
+
+  {%- comment -%}
+    Hamburger trigger. Figma's two states — 18x10 three-bar hamburger, and a
+    12.7279x12.9994 X — are one Smart Animate interaction, not two separate
+    icons: 18 * cos(45deg) = 12.7279, so the X is the same top/bottom bars
+    rotated 45deg to meet in the centre while the middle bar fades. This is
+    the classic hamburger-to-X morph, driven by CSS transform/opacity on
+    aria-expanded — see .gg-banner__menu in assets/gg-banner.css.
+  {%- endcomment -%}
+  {%- when 'hamburger' -%}
+    <svg class="gg-icon {{ icon_class }}" viewBox="0 0 18 10" width="18" height="10" aria-hidden="true" focusable="false">
+      <path class="gg-icon__bar gg-icon__bar--1" d="M0 1H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path class="gg-icon__bar gg-icon__bar--2" d="M0 5H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+      <path class="gg-icon__bar gg-icon__bar--3" d="M0 9H18" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
 {%- endcase -%}
