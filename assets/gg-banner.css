@@ -10,8 +10,7 @@
   --gg-bar-bg: #f5f5f5;
   --gg-strip-bg: #f5f5f5;
   --gg-panel-width: 38.2%;
-  /* 67px of a 1440 frame — kept proportional so the copy stays on the
-     same optical margin as the artwork at other widths. */
+  /* 67px of a 1440 frame, kept proportional across widths. */
   --gg-gutter: clamp(1.25rem, 4.65vw, 67px);
 
   color: var(--gg-ink);
@@ -55,12 +54,10 @@
 }
 
 /*
-  Figma: hamburger 18x10, fold to Group 1000008120 on click via Smart Animate,
-  ease-out, 300ms. 18 * cos(45deg) = 12.7279, matching that group's box exactly
-  — so the X is the top/bottom bars of THIS icon rotated 45deg to meet at
-  centre, not a separate asset. Reproduced with transform/opacity only, which
-  is what a Smart Animate of matching vector layers compiles down to, and
-  keeps the fold off the layout engine.
+  Figma: 18x10 hamburger, Smart Animate to an X over 300ms ease-out. Since
+  18 * cos(45deg) = 12.7279 — exactly the X's measured box — the X is these
+  same bars rotated, not a second asset. Transform/opacity only, so the fold
+  never touches layout.
 */
 .gg-icon__bar {
   transform-box: fill-box;
@@ -84,10 +81,7 @@
   .gg-icon__bar { transition: none; }
 }
 
-/*
-  Above the breakpoint the wrapper dissolves, so the tagline and CTA become
-  direct children of the bar's grid — the desktop row is unchanged.
-*/
+/* Above the breakpoint the wrapper dissolves, so its children join the bar's grid. */
 .gg-banner__menu-panel {
   display: contents;
 }
@@ -97,10 +91,9 @@
 .gg-banner__logo {
   align-self: center;
   font-family: var(--gg-font);
-  /* The logo is outlined vectors in the Figma (151.44 x 19), not a text
-     layer, so there is no type spec to copy. These values reproduce that
-     measured box in Jost while keeping the string editable, which the brief
-     requires. */
+  /* Outlined vectors in the Figma (151.44 x 19), not a text layer — so there is
+     no type spec to copy. These reproduce that box in Jost while keeping the
+     string customizer-editable. */
   font-size: 22px;
   line-height: 19px;
   font-weight: 500;
@@ -111,7 +104,6 @@
   white-space: nowrap;
 }
 
-/* Typography taken from the Figma spec for this string. */
 .gg-banner__tagline {
   align-self: center;
   margin: 0;
@@ -133,8 +125,7 @@
 
 .gg-banner__art {
   display: block;
-  /* Intrinsic width/height on the tags reserve the space; these keep the
-     artwork fluid without ever exceeding its row. */
+  /* width/height on the tags reserve the space; these keep it fluid. */
   max-width: 100%;
   height: auto;
 }
@@ -145,12 +136,9 @@
 }
 
 /*
-  Copy on the left, the narrower artwork on the right.
-
-  Figma places the lower frame at left 550 of 1440 (38.2%) and top 442 — while
-  the top band runs 64..454. The two therefore OVERLAP by 12px, which the
-  negative margin reproduces. Without it the lower band sits 12px too low and
-  every measurement below drifts.
+  Copy left, narrower artwork right. Figma puts the lower frame at left 550 of
+  1440 (38.2%) and top 442, while the top band runs 64..454 — so they OVERLAP
+  by 12px. Without the negative margin every measurement below drifts down.
 */
 .gg-banner__lower {
   display: grid;
@@ -245,6 +233,19 @@
   text-transform: uppercase;
 }
 
+
+/* ----------------------------------------------------------------------
+   Tablet — still side by side, but the 38.2% copy column gets cramped, so it
+   takes a larger share. Applied to grid-template-columns rather than
+   --gg-panel-width, which the section writes inline.
+   ---------------------------------------------------------------------- */
+@media screen and (min-width: 750px) and (max-width: 989px) {
+  .gg-banner__lower { grid-template-columns: 46% 1fr; }
+
+  .gg-banner__bar { --gg-bar-end: 24px; }
+
+  .gg-banner__heading { font-size: clamp(2rem, 4.4vw, 3rem); }
+}
 
 /* ----------------------------------------------------------------------
    Mobile

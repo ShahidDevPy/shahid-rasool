@@ -1,15 +1,12 @@
 /**
  * <gift-guide-grid> — wires the grid markers to the shared product popup.
  *
- * Written from scratch for the Ecomexperts test: no jQuery, no framework, and
- * no imports from the theme's `@theme/*` module map.
- *
  * Product data is serialised into the section by Liquid, so opening a popup
  * costs no network request. The only request made is the cart add itself.
  */
 
 import { findVariant, firstAvailable, selectionMatchesAll } from './gg-variants.js';
-import { buildOptionControls } from './gg-option-controls.js';
+import { buildOptionControls, isColourOption } from './gg-option-controls.js';
 import { addToCart, notifyCartUpdated } from './gg-cart.js';
 
 class GiftGuideGrid extends HTMLElement {
@@ -48,6 +45,9 @@ class GiftGuideGrid extends HTMLElement {
   }
 
   #onClick = (event) => {
+    // Any click outside an open dropdown dismisses it.
+    this.#closeDropdownsExcept(event.target.closest('.gg-popup__dropdown'));
+
     const opener = event.target.closest('[data-gg-open]');
     if (opener && this.contains(opener)) {
       this.#open(Number(opener.dataset.ggOpen), opener);
@@ -56,6 +56,16 @@ class GiftGuideGrid extends HTMLElement {
 
     if (event.target.closest('[data-gg-close]')) this.#close();
   };
+
+  /** Collapses every dropdown except the one the click landed in. */
+  #closeDropdownsExcept(keep) {
+    this.querySelectorAll('.gg-popup__dropdown').forEach((dropdown) => {
+      if (dropdown === keep) return;
+      dropdown
+        .querySelector('[aria-expanded="true"]')
+        ?.setAttribute('aria-expanded', 'false');
+    });
+  }
 
   #onKeydown = (event) => {
     if (event.key === 'Escape' && !this.popup.hidden) this.#close();
@@ -72,9 +82,14 @@ class GiftGuideGrid extends HTMLElement {
     this.activeProduct = product;
     this.activeTrigger = trigger;
 
-    // Start on a purchasable variant so the popup never opens sold out.
+    // Colour opens preselected, size on its placeholder — so add-to-cart stays
+    // disabled until the shopper picks. By option name, not index: merchants
+    // order options freely.
     const initial = firstAvailable(product.variants);
-    this.selection = initial ? [...initial.options] : [];
+    this.basePrice = initial ? initial.price : '';
+    this.selection = product.optionNames.map((name, index) =>
+      isColourOption(name) && initial ? initial.options[index] : null
+    );
 
     const image = this.querySelector('[data-gg-image]');
     image.src = product.image || '';
@@ -88,6 +103,7 @@ class GiftGuideGrid extends HTMLElement {
         variants: product.variants,
         selection: this.selection,
         onChange: this.#onOptionChange,
+        swatches: this.config.swatches,
       })
     );
 
@@ -118,18 +134,26 @@ class GiftGuideGrid extends HTMLElement {
     this.#syncVariant();
   };
 
-  /** Reflects the selected variant in the price and the CTA. */
+  /**
+   * Reflects the selected variant in the price and the CTA. An incomplete
+   * selection shows the opening price and a disabled CTA — not "sold out",
+   * which would misreport an item that is merely unspecified.
+   */
   #syncVariant() {
-    const variant = findVariant(this.activeProduct.variants, this.selection);
+    const complete = this.selection.every((value) => value != null);
+    const variant = complete
+      ? findVariant(this.activeProduct.variants, this.selection)
+      : undefined;
     this.activeVariant = variant;
 
-    this.querySelector('[data-gg-price]').textContent = variant?.price ?? '';
+    this.querySelector('[data-gg-price]').textContent = variant?.price ?? this.basePrice;
 
     const purchasable = Boolean(variant?.available);
     this.addButton.disabled = !purchasable;
-    this.addLabel.textContent = purchasable
-      ? this.config.strings.addToCart
-      : this.config.strings.soldOut;
+    this.addLabel.textContent =
+      !complete || purchasable
+        ? this.config.strings.addToCart
+        : this.config.strings.soldOut;
   }
 
   /* ---------------------------------------------------------------- *
@@ -137,9 +161,8 @@ class GiftGuideGrid extends HTMLElement {
    * ---------------------------------------------------------------- */
 
   /**
-   * The brief's companion rule: when the chosen variant matches BOTH trigger
-   * values (Black + Medium), the companion product goes in on the same request
-   * so the cart only updates once.
+   * Companion rule: a variant matching BOTH triggers (Black + Medium) adds the
+   * companion product on the same request, so the cart updates once.
    */
   #buildItems() {
     const items = [{ id: this.activeVariant.id, quantity: 1 }];

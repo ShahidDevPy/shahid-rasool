@@ -2,9 +2,6 @@
   ---------------------------------------------------------------------------
   Custom Banner — "The Gift Guide"
   ---------------------------------------------------------------------------
-  Built from scratch for the Ecomexperts test. Deliberately does NOT reuse any
-  theme section, block, snippet or `@theme/*` JS module.
-
   Desktop (Figma 1440 x 878), top to bottom:
     1. Utility bar .... logo · tagline · accent CTA          (optionally sticky)
     2. Hero .......... full-width art band, then copy beside a narrower band
@@ -16,21 +13,14 @@
     - copy centres, and SHOP NOW overlays the artwork
     - a shorter strip line, and its own illustration via <picture>
 
-  Notes:
-  - No JavaScript. Both button animations are pure CSS transitions, so this
-    section adds zero script weight to the page.
-  - Styles live in assets/gg-banner.css; the button primitives it shares with
-    the grid live in assets/gg-shared.css.
-  - The artwork is the LCP element, so it is preloaded at high priority while
-    everything else stays lightweight.
+  Styles: assets/gg-banner.css, plus assets/gg-shared.css for the button
+  primitives shared with the grid. Button animations are pure CSS; the only
+  script is the mobile menu toggle.
 {%- endcomment -%}
 
 {{ 'gg-shared.css' | asset_url | stylesheet_tag }}
 {{ 'gg-banner.css' | asset_url | stylesheet_tag }}
-{%- comment -%}
-  The only script this section loads: a ~40-line menu toggle. Deferred by being
-  a module, so it never blocks rendering.
-{%- endcomment -%}
+{%- comment -%} Menu toggle. A module, so it defers and never blocks render. {%- endcomment -%}
 <script src="{{ 'gg-banner-menu.js' | asset_url }}" type="module" fetchpriority="low"></script>
 
 {%- liquid
@@ -78,11 +68,9 @@
 {% endstyle %}
 
 {%- comment -%}
-  The top band is the desktop LCP, so it is fetched at high priority rather than
-  waiting on layout. `media` confines that to widths where the band actually
-  renders — without it, phones would preload artwork they never show.
-
-  Written as a raw link because preload_tag has no media parameter.
+  The top band is the desktop LCP, so it is fetched early. `media` confines that
+  to widths where the band renders, or phones would preload art they never show.
+  A raw link because preload_tag has no media parameter.
 {%- endcomment -%}
 {% # theme-check-disable AssetPreload %}
 <link
@@ -108,15 +96,11 @@
   "
 >
   {%- comment -%}
-    1. Utility bar.
+    1. Utility bar. Desktop is one row: logo · tagline · accent CTA. Mobile
+    collapses the tagline and CTA behind a hamburger into a panel below.
 
-    On desktop this is one row: logo · tagline · accent CTA. On mobile the
-    tagline and CTA collapse behind a hamburger and reappear in a panel beneath
-    the bar.
-
-    The two are the same markup either way — the wrapper is `display: contents`
-    above the breakpoint, so its children sit directly in the bar's grid and the
-    desktop layout is untouched. No duplicated markup, nothing hidden twice.
+    Same markup either way — the wrapper is `display: contents` above the
+    breakpoint, so its children sit directly in the bar's grid.
   {%- endcomment -%}
   <gg-banner-menu class="gg-banner__bar{% if s.sticky_bar %} gg-banner__bar--sticky{% endif %}">
     <button
@@ -126,12 +110,7 @@
       aria-label="Menu"
       aria-expanded="false"
     >
-      {%- comment -%}
-        Single icon, three bars. The Figma "closed" and "open" states are one
-        Smart Animate morph (see snippets/gg-icon.liquid), so the fold is done
-        with CSS transform/opacity on these same bars, keyed off aria-expanded
-        — not a crossfade between two separate icons.
-      {%- endcomment -%}
+      {%- comment -%} One icon; the fold to an X is CSS on these same bars. {%- endcomment -%}
       {%- render 'gg-icon', name: 'hamburger', class: 'gg-banner__menu-icon' -%}
     </button>
 
@@ -164,10 +143,9 @@
   {%- endcomment -%}
   <div class="gg-banner__hero">
     {%- comment -%}
-      The top band does not exist in the mobile design, and a hidden <img> is
-      still downloaded. Gating it behind a min-width source means phones match
-      no candidate and fall back to the inline 1x1 below — 43 bytes, no request
-      — while desktop loads the real artwork exactly as before.
+      Mobile has no top band, and a hidden <img> still downloads. Gating it
+      behind a min-width source means phones fall back to the inline 1x1 —
+      43 bytes, no request — while desktop is unchanged.
     {%- endcomment -%}
     <picture>
       <source
@@ -213,9 +191,8 @@
       {%- endcomment -%}
       <picture>
         {%- comment -%}
-          The source carries its own intrinsic size (375x264 vs the desktop's
-          890x402). Without it the img's attributes would impose the desktop
-          aspect ratio on the mobile artwork and squash it.
+          The source needs its own size (375x264 vs 890x402), or the img's
+          attributes impose the desktop ratio and squash the mobile art.
         {%- endcomment -%}
         <source
           media="(max-width: 749px)"
@@ -236,8 +213,8 @@
   </div>
 
   {%- comment -%}
-    3. Strip. The design shortens this line on mobile, so both are rendered and
-    CSS picks one — no JS, and no layout shift from swapping text after load.
+    3. Strip. Mobile shortens the line, so both render and CSS picks one — no JS,
+    no layout shift from swapping text after load.
   {%- endcomment -%}
   {%- if s.strip_text != blank -%}
     <div class="gg-banner__strip">

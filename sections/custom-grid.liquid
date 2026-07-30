@@ -2,16 +2,11 @@
   ---------------------------------------------------------------------------
   Custom Grid — "Tisso vison in the wild"
   ---------------------------------------------------------------------------
-  Built from scratch for the Ecomexperts test. Reuses no theme section, block,
-  snippet or `@theme/*` module.
+  Six product blocks in a 3x2 grid. Marker positions are per block, since the
+  design places them on the garment rather than a fixed corner.
 
-  Six product blocks in a 3x2 grid. Each tile carries a "+" marker whose
-  position is set per block, because in the design the markers sit on the
-  garment rather than in a fixed corner.
-
-  Clicking a marker opens a single shared popup that is hydrated from product
-  data serialised below. Serialising server-side (rather than fetching on
-  click) means opening the popup costs zero network requests.
+  Clicking a marker opens one shared popup, hydrated from the product data
+  serialised below — so opening it costs no network request.
 {%- endcomment -%}
 
 {{ 'gg-shared.css' | asset_url | stylesheet_tag }}
@@ -21,10 +16,18 @@
 {%- liquid
   assign s = section.settings
 
-  # The section owns its typography rather than inheriting the store's theme
-  # font. The heading is a separate picker because the design deliberately
-  # contrasts a serif heading against the body sans.
+  # The section owns its typography rather than inheriting the theme font. The
+  # heading is a separate picker for the design's serif/sans contrast.
   assign font_medium = s.font | font_modify: 'weight', '500'
+  assign font_light = s.font | font_modify: 'weight', '300'
+
+  # Per-block pickers first; unset blocks fall back to the nth product of a
+  # collection, so a fresh section shows real products rather than empty tiles.
+  if s.fallback_collection != blank
+    assign fallback_products = s.fallback_collection.products
+  else
+    assign fallback_products = collections.all.products
+  endif
 -%}
 
 {%- comment -%}
@@ -35,6 +38,9 @@
   {{ s.font | font_face: font_display: 'swap' }}
   {%- if font_medium -%}
     {{ font_medium | font_face: font_display: 'swap' }}
+  {%- endif -%}
+  {%- if font_light -%}
+    {{ font_light | font_face: font_display: 'swap' }}
   {%- endif -%}
   {{ s.heading_font | font_face: font_display: 'swap' }}
 {% endstyle %}
@@ -57,6 +63,9 @@
     {%- for block in section.blocks -%}
       {%- liquid
         assign product = block.settings.product
+        if product == blank
+          assign product = fallback_products[forloop.index0]
+        endif
         assign image = block.settings.image | default: product.featured_image
       -%}
       <div class="gg-grid__item" {{ block.shopify_attributes }}>
@@ -77,9 +86,8 @@
 
         {%- if product != blank -%}
           {%- comment -%}
-            A real <button> so it is keyboard reachable. The marker doubles as
-            the close control once its popup is open, matching the design's
-            "+" to "x" swap.
+            A real <button> so it is keyboard reachable. It doubles as the close
+            control once open, matching the design's "+" to "x" swap.
           {%- endcomment -%}
           <button
             type="button"
@@ -97,14 +105,20 @@
     {%- endfor -%}
   </div>
 
-  {%- comment -%}
-    Product data for the popup. Trimmed to the fields the popup actually needs
-    rather than dumping the whole product object.
-  {%- endcomment -%}
+  {%- comment -%} Popup data, trimmed to the fields it actually uses. {%- endcomment -%}
   <script type="application/json" data-gg-products>
     [
       {%- for block in section.blocks -%}
-        {%- assign p = block.settings.product -%}
+        {%- comment -%}
+          Must resolve exactly as the markup loop, or a marker's index would
+          address a different product than the tile it sits on.
+        {%- endcomment -%}
+        {%- liquid
+          assign p = block.settings.product
+          if p == blank
+            assign p = fallback_products[forloop.index0]
+          endif
+        -%}
         {%- if p == blank -%}
           null
         {%- else -%}
@@ -133,14 +147,26 @@
   </script>
 
   {%- comment -%}
-    Cart config, including the automatic companion-product rule. Kept as
-    settings rather than hardcoded strings so the rule is auditable and
-    editable without touching JS.
+    Option value -> hex from the "Colour swatches" setting. The trailing
+    separator is safe: Liquid's split drops the empty final element, so the join
+    never leaves a dangling comma.
   {%- endcomment -%}
+  {%- capture swatch_pairs -%}
+    {%- assign swatch_lines = s.swatch_colors | newline_to_br | split: '<br />' -%}
+    {%- for line in swatch_lines -%}
+      {%- assign pair = line | strip | split: ':' -%}
+      {%- if pair.size >= 2 -%}
+        {{ pair[0] | strip | downcase | json }}:{{ pair[1] | strip | json }}|
+      {%- endif -%}
+    {%- endfor -%}
+  {%- endcapture -%}
+  {%- assign swatch_map = swatch_pairs | strip | split: '|' | join: ',' -%}
+
   {%- assign bonus = s.bonus_product -%}
   <script type="application/json" data-gg-config>
     {
       "cartAddUrl": {{ routes.cart_add_url | json }},
+      "swatches": { {{ swatch_map }} },
       "bonus": {
         {%- if bonus != blank and bonus.first_available_variant != blank -%}
           "variantId": {{ bonus.first_available_variant.id }},
@@ -227,11 +253,12 @@
       "type": "range",
       "id": "marker_size",
       "label": "Marker size",
-      "min": 24,
-      "max": 60,
-      "step": 2,
+      "min": 12,
+      "max": 40,
+      "step": 1,
       "unit": "px",
-      "default": 34
+      "default": 22,
+      "info": "Figma: 22px on desktop, 15.71px on mobile (handled in CSS). Tap target stays 44px."
     },
     {
       "type": "color",
@@ -255,7 +282,20 @@
       "id": "heading_font",
       "label": "Heading font",
       "default": "playfair_display_n4",
-      "info": "The design uses a serif here, contrasting the body sans."
+      "info": "Figma uses Lustria, which Shopify does not host — Playfair Display is the closest hosted serif. Also drives the popup price."
+    },
+    {
+      "type": "textarea",
+      "id": "swatch_colors",
+      "label": "Colour swatches",
+      "info": "One per line as Name: #hex. Values not listed fall back to the colour name itself, then to neutral grey.",
+      "default": "Blue: #0D499F\nRed: #B20F36\nGrey: #AFAFB7"
+    },
+    {
+      "type": "collection",
+      "id": "fallback_collection",
+      "label": "Fallback collection",
+      "info": "Fills any block whose product is unset, in order. Leave empty to use all products. Per-block pickers always take precedence."
     },
     {
       "type": "header",

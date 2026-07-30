@@ -6,7 +6,7 @@
 .gg-grid {
   --gg-ink: #000000;
   --gg-grid-gap: 20px;
-  --gg-marker-size: 34px;
+  --gg-marker-size: 22px;
   --gg-grid-gutter: clamp(1rem, 3.5vw, 3.25rem);
 
   display: block;
@@ -15,26 +15,35 @@
 }
 
 .gg-grid__heading {
-  margin: 0 0 clamp(1.25rem, 2.5vw, 2rem);
+  /* Shares the grid's measure so it lines up with the first tile's left edge. */
+  max-width: 1339px;
+  margin: 0 auto clamp(1rem, 1.53vw, 22px);
   /*
-    The design sets this heading in a serif, deliberately contrasting the body
-    sans. Driven by its own font_picker so it can be matched exactly.
+    Serif, deliberately contrasting the body sans. Figma specifies Lustria, which
+    Shopify does not host — a `lustria_n4` default is rejected at upload — so
+    this defaults to Playfair Display. Self-host a woff2 for exact fidelity.
   */
   font-family: var(--gg-heading-font, Georgia, 'Times New Roman', Times, serif);
-  font-size: clamp(1.5rem, 2.6vw, 2.25rem);
+  /* Figma: 372x43 @ Lustria 400 / 36px / line-height 120% / ls 0. */
+  font-size: clamp(1.625rem, 2.5vw, 36px);
   font-weight: 400;
-  letter-spacing: -0.01em;
+  line-height: 120%;
+  letter-spacing: 0;
 }
 
 .gg-grid__items {
   display: grid;
+  /* Figma: container 1339 fixed with 20px gaps -> three 433px tiles. */
   grid-template-columns: repeat(3, 1fr);
   gap: var(--gg-grid-gap);
+  max-width: 1339px;
+  margin-inline: auto;
 }
 
 .gg-grid__item {
   position: relative;
-  aspect-ratio: 1 / 1;
+  /* Figma tile 433 x 444 — very slightly taller than square. */
+  aspect-ratio: 433 / 444;
   overflow: hidden;
   background-color: #f6f6f6;
 }
@@ -57,42 +66,56 @@
   position: absolute;
   left: var(--gg-marker-x, 50%);
   top: var(--gg-marker-y, 50%);
-  width: var(--gg-marker-size);
-  height: var(--gg-marker-size);
+  /*
+    The circle is 22px (15.71px on mobile), below a usable tap target — so the
+    BUTTON is 44px and transparent, and the inner span draws the circle.
+  */
+  width: 44px;
+  height: 44px;
   margin: 0;
   padding: 0;
   display: grid;
   place-items: center;
   border: 0;
-  border-radius: 50%;
-  background-color: #ffffff;
+  background: none;
   color: var(--gg-ink);
-  box-shadow: 0 2px 10px rgb(0 0 0 / 22%);
   cursor: pointer;
-  /* Centre on the chosen point, and scale from there on hover. */
   transform: translate(-50%, -50%);
-  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.gg-grid__marker:hover,
-.gg-grid__marker:focus-visible {
-  transform: translate(-50%, -50%) scale(1.15);
-}
-
-.gg-grid__marker:focus-visible {
-  outline: 2px solid var(--gg-ink);
-  outline-offset: 3px;
-}
-
+/* Figma marker: #F8F8F8 at 90%, shadow dy 3 / blur 4 / 20%.
+   22px on desktop, 15.71px on mobile — see the media query below. */
 .gg-grid__marker-plus,
 .gg-grid__marker-close {
   display: grid;
   place-items: center;
-  width: 55%;
-  height: 55%;
+  width: var(--gg-marker-size);
+  height: var(--gg-marker-size);
+  border-radius: 50%;
+  background-color: rgb(248 248 248 / 90%);
+  box-shadow: 0 3px 4px rgb(0 0 0 / 20%);
+  transition: transform 0.25s cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-.gg-grid__marker svg { width: 100%; height: 100%; }
+.gg-grid__marker:hover .gg-grid__marker-plus,
+.gg-grid__marker:hover .gg-grid__marker-close,
+.gg-grid__marker:focus-visible .gg-grid__marker-plus,
+.gg-grid__marker:focus-visible .gg-grid__marker-close {
+  transform: scale(1.15);
+}
+
+.gg-grid__marker:focus-visible {
+  outline: 2px solid var(--gg-ink);
+  outline-offset: -8px;
+}
+
+/* Glyph scales with the circle, so it stays a hairline plus at both sizes. */
+.gg-grid__marker svg { width: 62%; height: 62%; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-grid__marker-plus,
+  .gg-grid__marker-close { transition: none; }
+}
 
 /* "+" becomes "x" while that tile's popup is open. */
 .gg-grid__marker-close { display: none; }
@@ -122,11 +145,18 @@
 .gg-popup__dialog {
   position: relative;
   box-sizing: border-box;
-  width: min(100%, 40rem);
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: clamp(1.5rem, 3vw, 2.5rem);
+  /* Figma card: 311 x 447, 20px side padding (311 - 40 = 271 content),
+     image top 36, 25px clear below the CTA. */
+  width: min(100%, 311px);
+  padding: 36px 20px 25px;
   background-color: #ffffff;
+  box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
+  /*
+    The card itself never scrolls — the size list is the only scroller. This is
+    also what lets the dropdown panel overlay past the card's edge: an
+    overflow value other than visible would clip it.
+  */
+  overflow: visible;
 }
 
 @media (prefers-reduced-motion: no-preference) {
@@ -139,10 +169,10 @@
 
 .gg-popup__close {
   position: absolute;
-  inset-block-start: 1rem;
-  inset-inline-end: 1rem;
-  width: 40px;
-  height: 40px;
+  inset-block-start: 8px;
+  inset-inline-end: 8px;
+  width: 32px;
+  height: 32px;
   display: grid;
   place-items: center;
   padding: 0;
@@ -152,139 +182,235 @@
   cursor: pointer;
 }
 
-.gg-popup__close svg { width: 22px; height: 22px; }
+.gg-popup__close svg { width: 14px; height: 14px; }
 
+/* Figma: image 120x140 at left 17, copy column starts at x=145. */
 .gg-popup__head {
   display: grid;
-  grid-template-columns: minmax(0, 240px) minmax(0, 1fr);
-  gap: clamp(1rem, 2.5vw, 1.75rem);
-  margin-block-end: 1.75rem;
-  padding-inline-end: 2.5rem;
+  grid-template-columns: 120px minmax(0, 1fr);
+  gap: 8px;
+  margin-block-end: 7px;
 }
 
 .gg-popup__image {
-  width: 100%;
-  height: auto;
-  aspect-ratio: 1 / 1;
+  width: 120px;
+  height: 140px;
   object-fit: cover;
   display: block;
 }
 
+/* Figma: Jost 300 / 16px / lh 120% / ls 0. */
 .gg-popup__title {
-  margin: 0 0 0.75rem;
+  margin: 0 0 12px;
   font-family: var(--gg-font);
-  font-size: clamp(1.35rem, 2.2vw, 1.75rem);
-  font-weight: 400;
-  line-height: 1.2;
+  font-size: 16px;
+  font-weight: 300;
+  line-height: 120%;
+  letter-spacing: 0;
 }
 
+/* Figma: Lustria 400 / 16px / lh 120% — the serif, matching the section heading. */
 .gg-popup__price {
-  margin: 0 0 0.9rem;
-  font-family: var(--gg-font);
-  font-size: clamp(1.15rem, 1.8vw, 1.5rem);
-  font-weight: 700;
+  margin: 0 0 12px;
+  font-family: var(--gg-heading-font, Georgia, serif);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 120%;
+  letter-spacing: 0;
 }
 
+/* Figma: Jost 300 / 14px / lh 110% / ls -1%. */
 .gg-popup__description {
   margin: 0;
   font-family: var(--gg-font);
-  font-size: 0.95rem;
-  line-height: 1.5;
+  font-size: 14px;
+  font-weight: 300;
+  line-height: 110%;
+  letter-spacing: -0.01em;
 }
 
-.gg-popup__option { margin-block-end: 1.5rem; }
+/* Figma: each option group is 271 x 64.48 — label plus a 45px control. */
+.gg-popup__option { margin-block-end: 7px; }
+
+/* Whitespace before the CTA, per the Figma's 377px CTA top. */
+.gg-popup__option:last-of-type { margin-block-end: 55px; }
 
 .gg-popup__option-label {
   display: block;
-  margin-block-end: 0.6rem;
+  margin-block-end: 4px;
   font-family: var(--gg-font);
-  font-size: 1rem;
+  font-size: 14px;
+  font-weight: 400;
 }
 
-/* Segmented swatches — one cell per value, colour chip on the leading edge. */
+/* Segmented swatches — one bordered unit, colour bar on each cell's edge. */
 .gg-popup__swatches {
   display: flex;
+  height: 45px;
   border: 1px solid #d7d7d7;
+  overflow: hidden;
 }
 
 .gg-popup__swatch {
+  position: relative;
   flex: 1 1 0;
   display: flex;
   align-items: center;
-  gap: 0.75rem;
-  min-height: 62px;
-  padding: 0 1rem;
+  padding: 0;
   border: 0;
   border-inline-start: 1px solid #d7d7d7;
-  background: none;
+  background-color: transparent;
   color: var(--gg-ink);
   font-family: var(--gg-font);
-  font-size: 1.05rem;
+  font-size: 14px;
   text-align: start;
   cursor: pointer;
+  /* Matches the design's Smart Animate transitions. */
+  transition: background-color 300ms ease-out, color 300ms ease-out;
 }
 
 .gg-popup__swatch:first-child { border-inline-start: 0; }
 
-/* The colour chip. Value name doubles as the CSS colour where it resolves. */
+/*
+  The colour bar. The option value doubles as the CSS colour when the browser
+  recognises it (Blue, Black, Red...), else it stays neutral.
+*/
 .gg-popup__swatch::before {
   content: '';
   flex: none;
-  width: 10px;
+  width: 6px;
   align-self: stretch;
-  margin-inline-start: -1rem;
   background-color: var(--gg-swatch, #cccccc);
 }
 
-.gg-popup__swatch[aria-pressed='true'] { font-weight: 500; }
-.gg-popup__swatch[disabled] { opacity: 0.4; cursor: not-allowed; }
+.gg-popup__swatch-label { padding-inline: 10px; }
 
-/* Dropdown for the remaining options. */
-.gg-popup__select-wrap {
-  position: relative;
-  display: grid;
-  grid-template-columns: 1fr 62px;
-  border: 1px solid #d7d7d7;
+/* Selected: fills with ink, text flips to white. */
+.gg-popup__swatch[aria-pressed='true'] {
+  background-color: var(--gg-ink);
+  color: #ffffff;
 }
 
-.gg-popup__select {
-  appearance: none;
-  min-height: 62px;
-  padding: 0 1rem;
-  border: 0;
+.gg-popup__swatch:not([aria-pressed='true']):hover {
+  background-color: #f2f2f2;
+}
+
+.gg-popup__swatch[disabled] { opacity: 0.4; cursor: not-allowed; }
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-popup__swatch { transition: none; }
+}
+
+/* ----------------------------------------------------------------------
+   Custom dropdown (Figma Component 213). A native select cannot render the
+   bordered 36px-row panel, so this is a combobox + listbox.
+   ---------------------------------------------------------------------- */
+.gg-popup__dropdown { position: relative; }
+
+.gg-popup__dropdown-trigger {
+  display: grid;
+  grid-template-columns: 1fr 45px;
+  align-items: center;
+  width: 100%;
+  height: 45px;
+  padding: 0;
+  border: 1px solid #d7d7d7;
   background: none;
   color: var(--gg-ink);
   font-family: var(--gg-font);
-  font-size: 1.05rem;
+  font-size: 14px;
+  text-align: start;
   cursor: pointer;
 }
 
-.gg-popup__select:focus-visible { outline: 2px solid var(--gg-ink); outline-offset: -2px; }
+.gg-popup__dropdown-value { padding-inline: 12px; }
 
-.gg-popup__select-arrow {
+/* Placeholder reads lighter until a real value is chosen. */
+.gg-popup__dropdown-value[data-placeholder] { color: #6b6b6b; }
+
+.gg-popup__dropdown-chevron {
   display: grid;
   place-items: center;
+  align-self: stretch;
   border-inline-start: 1px solid #d7d7d7;
-  pointer-events: none;
+  /* Flips to point up while open. */
+  transition: transform 300ms ease-out;
 }
 
-.gg-popup__select-arrow svg { width: 18px; height: 18px; }
+.gg-popup__dropdown-chevron svg { width: 14px; height: 14px; }
 
+.gg-popup__dropdown-trigger[aria-expanded='true'] .gg-popup__dropdown-chevron {
+  transform: rotate(180deg);
+}
+
+.gg-popup__dropdown-list {
+  display: none;
+  /* Overlays rather than expanding the card, which would push the CTA out of it. */
+  position: absolute;
+  inset-inline: 0;
+  inset-block-start: 100%;
+  z-index: 2;
+  margin: 0;
+  padding: 0;
+  border: 1px solid #d7d7d7;
+  border-block-start: 0;
+  background-color: #ffffff;
+  list-style: none;
+  /*
+    Five 36px rows — a full XS..XL set shows without scrolling. Longer sets
+    scroll here, and this is the only scrollable region in the popup.
+  */
+  max-height: 180px;
+  overflow-y: auto;
+}
+
+.gg-popup__dropdown-trigger[aria-expanded='true'] + .gg-popup__dropdown-list {
+  display: block;
+}
+
+/* Figma: option rows are 271 x 36, Jost 400 / 16px / lh 100% / ls -2%. */
+.gg-popup__dropdown-option {
+  display: grid;
+  place-items: center;
+  height: 36px;
+  font-family: var(--gg-font);
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 100%;
+  letter-spacing: -0.02em;
+  cursor: pointer;
+  transition: background-color 300ms ease-out, color 300ms ease-out;
+}
+
+/* Hover and selected both fill with ink, matching the colour swatches. */
+.gg-popup__dropdown-option:hover,
+.gg-popup__dropdown-option:focus-visible,
+.gg-popup__dropdown-option[aria-selected='true'] {
+  background-color: var(--gg-ink);
+  color: #ffffff;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gg-popup__dropdown-chevron,
+  .gg-popup__dropdown-option { transition: none; }
+}
+
+/* Figma: ADD TO CART 271 x 45. */
 .gg-popup__atc {
-  width: 100%;
-  justify-content: center;
-  gap: 2.5rem;
-  min-height: 68px;
-  font-size: 1.05rem;
-  letter-spacing: 0.06em;
+  --gg-btn-w: 100%;
+  --gg-btn-h: 45px;
+  --gg-btn-pl: 34px;
+  --gg-btn-pr: 20px;
+  --gg-btn-fs: 14px;
+  --gg-arrow-w: 24px;
 }
 
 .gg-popup__atc[disabled] { opacity: 0.5; cursor: not-allowed; }
 
 .gg-popup__status {
-  margin: 0.75rem 0 0;
+  margin: 8px 0 0;
   font-family: var(--gg-font);
-  font-size: 0.85rem;
+  font-size: 12px;
   min-height: 1.2em;
 }
 
@@ -296,28 +422,56 @@ body.gg-popup-open { overflow: hidden; }
 /* ----------------------------------------------------------------------
    Responsive
    ---------------------------------------------------------------------- */
+/* Tablet: gap sits between desktop 20px and mobile 4px. Set on the declaration,
+   not --gg-grid-gap, which the section writes inline. */
 @media screen and (max-width: 989px) {
-  .gg-grid__items { grid-template-columns: repeat(2, 1fr); }
+  .gg-grid__items {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
 }
 
 @media screen and (max-width: 749px) {
-  .gg-grid__items { grid-template-columns: 1fr; }
 
-  .gg-popup { padding: 0; }
-
-  .gg-popup__dialog {
-    width: 100%;
-    max-height: 100vh;
-    min-height: 100vh;
+  /*
+    The section writes --gg-grid-gap and --gg-marker-size INLINE, and inline
+    styles outrank any rule redefining the same custom property — so mobile
+    values go on the consuming declarations instead.
+  */
+  .gg-grid__items {
+    grid-template-columns: repeat(2, 1fr);
+    /* Figma mobile: 342 wide holding two 169px tiles -> 4px gap. */
+    gap: 4px;
   }
 
-  /* Image above the copy once there is no room for two columns. */
-  .gg-popup__head {
-    grid-template-columns: 1fr;
-    padding-inline-end: 2.5rem;
+  /* Figma mobile marker is 15.714px, against 22px on desktop. */
+  .gg-grid__marker-plus,
+  .gg-grid__marker-close {
+    width: 15.71px;
+    height: 15.71px;
   }
 
-  .gg-popup__image { max-width: 220px; }
+  .gg-grid__item { aspect-ratio: 169 / 186.42; }
 
-  .gg-popup__atc { gap: 1.5rem; }
+  /*
+    Mobile pins every marker to one spot, overriding the per-block settings.
+    Figma: left 101.29 / top 18 in a 169 x 186.42 tile — expressed here as the
+    CENTRE, since the marker is translated by -50%.
+  */
+  .gg-grid__marker {
+    left: 64.6%;
+    top: 13.87%;
+  }
+
+  /*
+    The middle row sits 1px lower in the Figma (marker top 19, not 18), so row
+    two — items 3 and 4 — is nudged to match. Looks like an accidental nudge in
+    the source rather than intent; delete this rule to make all rows identical.
+  */
+  .gg-grid__item:nth-child(n + 3):nth-child(-n + 4) .gg-grid__marker {
+    top: 14.41%;
+  }
+
+  /* The 311px card already fits a phone; just keep it off the viewport edges. */
+  .gg-popup { padding: 16px; }
 }
