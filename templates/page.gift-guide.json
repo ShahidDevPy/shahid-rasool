@@ -1,35 +1,87 @@
+/*
+ * ------------------------------------------------------------
+ * IMPORTANT: The contents of this file are auto-generated.
+ *
+ * This file may be updated by the Shopify admin theme editor
+ * or related systems. Please exercise caution as any changes
+ * made to this file may be overwritten.
+ * ------------------------------------------------------------
+ */
 {
   "sections": {
     "banner": {
       "type": "custom-banner",
-      "settings": {}
+      "settings": {
+        "logo_text": "TISSO VISON",
+        "logo_link": "",
+        "tagline": "Find the ideal gift for your loved ones.",
+        "bar_button_label": "CHOOSE GIFT",
+        "bar_button_link": "",
+        "sticky_bar": true,
+        "heading": "The Gift Guide",
+        "body": "<p>Discover Joy: Your Ultimate Holiday Gift Destination. Explore our curated selection and find the perfect gifts to delight your loved ones this holiday season.</p>",
+        "hero_button_label": "SHOP NOW",
+        "hero_button_link": "",
+        "panel_width": 38.2,
+        "strip_text": "Sustainable, ethically made clothes in sizes XXS to 6XL",
+        "strip_text_mobile": "Sustainable, ethically made activewear",
+        "font": "jost_n4",
+        "accent_color": "#fff544",
+        "bar_background": "#f5f5f5",
+        "text_color": "#000000",
+        "strip_background": "#f5f5f5"
+      }
     },
     "grid": {
       "type": "custom-grid",
       "blocks": {
         "product-1": {
           "type": "product",
-          "settings": { "marker_x": 62, "marker_y": 56 }
+          "settings": {
+            "product": "",
+            "marker_x": 62,
+            "marker_y": 56
+          }
         },
         "product-2": {
           "type": "product",
-          "settings": { "marker_x": 85, "marker_y": 52 }
+          "settings": {
+            "product": "",
+            "marker_x": 85,
+            "marker_y": 52
+          }
         },
         "product-3": {
           "type": "product",
-          "settings": { "marker_x": 63, "marker_y": 21 }
+          "settings": {
+            "product": "",
+            "marker_x": 63,
+            "marker_y": 21
+          }
         },
         "product-4": {
           "type": "product",
-          "settings": { "marker_x": 72, "marker_y": 18 }
+          "settings": {
+            "product": "",
+            "marker_x": 72,
+            "marker_y": 18
+          }
         },
         "product-5": {
           "type": "product",
-          "settings": { "marker_x": 51, "marker_y": 26 }
+          "settings": {
+            "product": "",
+            "marker_x": 51,
+            "marker_y": 26
+          }
         },
         "product-6": {
           "type": "product",
-          "settings": { "marker_x": 76, "marker_y": 39 }
+          "settings": {
+            "product": "",
+            "marker_x": 76,
+            "marker_y": 39
+          }
         }
       },
       "block_order": [
@@ -40,8 +92,28 @@
         "product-5",
         "product-6"
       ],
-      "settings": {}
+      "settings": {
+        "heading": "Tisso vison in the wild",
+        "gap": 20,
+        "marker_size": 22,
+        "text_color": "#000000",
+        "font": "jost_n4",
+        "heading_font": "playfair_display_n4",
+        "swatch_colors": "Blue: #0D499F\nRed: #B20F36\nGrey: #AFAFB7",
+        "fallback_collection": "",
+        "bonus_product": "dark-winter-jacket",
+        "bonus_handle": "soft-winter-jacket",
+        "bonus_trigger_a": "Black",
+        "bonus_trigger_b": "Medium",
+        "add_to_cart_label": "ADD TO CART",
+        "added_label": "ADDED TO CART",
+        "sold_out_label": "SOLD OUT",
+        "error_label": "Something went wrong. Please try again."
+      }
     }
   },
-  "order": ["banner", "grid"]
+  "order": [
+    "banner",
+    "grid"
+  ]
 }
