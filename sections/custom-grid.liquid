@@ -162,7 +162,18 @@
   {%- endcapture -%}
   {%- assign swatch_map = swatch_pairs | strip | split: '|' | join: ',' -%}
 
-  {%- assign bonus = s.bonus_product -%}
+  {%- comment -%}
+    A product picker cannot carry a schema default — it stores a store-specific
+    id. So the companion falls back to a handle lookup, letting the rule work on
+    a fresh install without any Customizer setup. The picker still wins when set,
+    which is what lets a merchant point it elsewhere.
+  {%- endcomment -%}
+  {%- liquid
+    assign bonus = s.bonus_product
+    if bonus == blank and s.bonus_handle != blank
+      assign bonus = all_products[s.bonus_handle]
+    endif
+  -%}
   <script type="application/json" data-gg-config>
     {
       "cartAddUrl": {{ routes.cart_add_url | json }},
@@ -306,7 +317,14 @@
       "type": "product",
       "id": "bonus_product",
       "label": "Product to auto-add",
-      "info": "Set this to Soft Winter Jacket."
+      "info": "Optional — overrides the handle below. Leave empty to use Soft Winter Jacket."
+    },
+    {
+      "type": "text",
+      "id": "bonus_handle",
+      "label": "Fallback product handle",
+      "info": "Used when no product is picked above. Defaults to soft-winter-jacket, so the rule works without setup.",
+      "default": "soft-winter-jacket"
     },
     {
       "type": "text",
