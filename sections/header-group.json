@@ -16,6 +16,7 @@
       "blocks": {
         "announcement_BxgCk9": {
           "type": "_announcement",
+          "disabled": true,
           "settings": {
             "text": "Welcome to our store",
             "link": "",
@@ -59,6 +60,7 @@
         },
         "header-menu": {
           "type": "_header-menu",
+          "disabled": true,
           "static": true,
           "settings": {
             "menu": "main-menu",
