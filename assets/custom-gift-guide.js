@@ -181,11 +181,14 @@ class GiftGuideGrid extends HTMLElement {
     this.addButton.disabled = true;
     this.#setStatus('');
 
+    const items = this.#buildItems();
+
     try {
-      await addToCart(this.#buildItems(), { cartAddUrl: this.config.cartAddUrl });
+      await addToCart(items, { cartAddUrl: this.config.cartAddUrl });
 
       this.addLabel.textContent = this.config.strings.added;
-      notifyCartUpdated({ source: 'gift-guide' });
+      // Not awaited: the cart drawer refreshing must not hold up the UI.
+      notifyCartUpdated(items);
 
       setTimeout(() => {
         if (this.activeProduct) this.#syncVariant();
