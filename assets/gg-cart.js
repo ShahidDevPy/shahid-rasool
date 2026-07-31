@@ -39,9 +39,10 @@ export async function addToCart(items, { cartAddUrl = '/cart/add' } = {}) {
  * Listeners read `event.promise`, so the fresh cart is passed that way.
  */
 export async function notifyCartUpdated(items = []) {
-  const cart = await fetch('/cart.js').then((r) => r.json());
-
+  // failure here should never surface as an error — worst case the drawer
+  // just doesn't refresh itself.
   try {
+    const cart = await fetch('/cart.js').then((r) => r.json());
     const { StandardEvents, CartLinesUpdateEvent } = await import('@shopify/events');
 
     document.dispatchEvent(
@@ -61,11 +62,9 @@ export async function notifyCartUpdated(items = []) {
 
     return StandardEvents.cartLinesUpdate;
   } catch {
-    // No standard-events package available — fall back to a plain event so a
-    // host theme can still listen, and let the caller carry on.
-    document.dispatchEvent(
-      new CustomEvent('cart:refresh', { bubbles: true, detail: { cart } })
-    );
+    // Covers both a fetch failure and @shopify/events being unavailable —
+    // fall back to a plain event so a host theme can still listen.
+    document.dispatchEvent(new CustomEvent('cart:refresh', { bubbles: true }));
     return 'cart:refresh';
   }
 }
