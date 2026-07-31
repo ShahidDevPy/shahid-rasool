@@ -190,9 +190,11 @@ class GiftGuideGrid extends HTMLElement {
       // Not awaited: the cart drawer refreshing must not hold up the UI.
       notifyCartUpdated(items);
 
+      // Brief confirmation, then close — leaves the theme's own cart drawer to
+      // take over rather than competing with this popup on screen.
       setTimeout(() => {
-        if (this.activeProduct) this.#syncVariant();
-      }, 1800);
+        if (this.activeProduct) this.#close();
+      }, 600);
     } catch {
       this.#setStatus(this.config.strings.error, true);
       this.addButton.disabled = false;
