@@ -64,9 +64,14 @@
   flex: none;
 }
 
-.gg-btn:hover .gg-btn__label { transform: translateX(-2px); }
-.gg-btn:hover .gg-btn__arrow { transform: translateX(6px); }
-.gg-btn:hover::before { transform: scaleX(1); }
+/*
+  Hover is gated on :not([disabled]). The colour swap and the fill sweep have to
+  move together — applying the swap alone to a disabled button leaves ink text
+  on an ink background, i.e. an invisible label.
+*/
+.gg-btn:not([disabled]):hover .gg-btn__label { transform: translateX(-2px); }
+.gg-btn:not([disabled]):hover .gg-btn__arrow { transform: translateX(6px); }
+.gg-btn:not([disabled]):hover::before { transform: scaleX(1); }
 
 .gg-btn:focus-visible {
   outline: 2px solid currentcolor;
@@ -80,7 +85,7 @@
 }
 
 .gg-btn--accent::before { background-color: var(--gg-ink, #000); }
-.gg-btn--accent:hover { color: var(--gg-accent, #f9f24e); }
+.gg-btn--accent:not([disabled]):hover { color: var(--gg-accent, #f9f24e); }
 
 /* Solid — ink, inverting to accent on hover. */
 .gg-btn--solid {
@@ -89,14 +94,13 @@
 }
 
 .gg-btn--solid::before { background-color: var(--gg-accent, #f9f24e); }
-.gg-btn--solid:hover { color: var(--gg-ink, #000); }
+.gg-btn--solid:not([disabled]):hover { color: var(--gg-ink, #000); }
 
 .gg-btn[disabled] {
   opacity: 0.5;
   cursor: not-allowed;
 }
 
-.gg-btn[disabled]:hover::before { transform: scaleX(0); }
 
 /* Keep the colour change, drop the movement. */
 @media (prefers-reduced-motion: reduce) {
@@ -106,8 +110,8 @@
     transition: none;
   }
 
-  .gg-btn:hover .gg-btn__label,
-  .gg-btn:hover .gg-btn__arrow {
+  .gg-btn:not([disabled]):hover .gg-btn__label,
+  .gg-btn:not([disabled]):hover .gg-btn__arrow {
     transform: none;
   }
 }

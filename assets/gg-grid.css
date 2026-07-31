@@ -151,11 +151,7 @@
   padding: 36px 20px 25px;
   background-color: #ffffff;
   box-shadow: 0 2px 4px rgb(0 0 0 / 20%);
-  /*
-    The card itself never scrolls — the size list is the only scroller. This is
-    also what lets the dropdown panel overlay past the card's edge: an
-    overflow value other than visible would clip it.
-  */
+  /* The card itself never scrolls — the size list is the only scroller. */
   overflow: visible;
 }
 
@@ -243,11 +239,12 @@
   font-weight: 400;
 }
 
-/* Segmented swatches — one bordered unit, colour bar on each cell's edge. */
+/* Segmented swatches — one bordered unit, colour bar on each cell's edge.
+   Figma: 271 x 40.44, 0.5px black border, same box as the size control. */
 .gg-popup__swatches {
   display: flex;
-  height: 45px;
-  border: 1px solid #d7d7d7;
+  height: 40.44px;
+  border: 0.5px solid #000000;
   overflow: hidden;
 }
 
@@ -258,7 +255,7 @@
   align-items: center;
   padding: 0;
   border: 0;
-  border-inline-start: 1px solid #d7d7d7;
+  border-inline-start: 0.5px solid #000000;
   background-color: transparent;
   color: var(--gg-ink);
   font-family: var(--gg-font);
@@ -307,14 +304,15 @@
    ---------------------------------------------------------------------- */
 .gg-popup__dropdown { position: relative; }
 
+/* Figma: 271 x 40.44, 0.5px black border. */
 .gg-popup__dropdown-trigger {
   display: grid;
-  grid-template-columns: 1fr 45px;
+  grid-template-columns: 1fr 40.44px;
   align-items: center;
   width: 100%;
-  height: 45px;
+  height: 40.44px;
   padding: 0;
-  border: 1px solid #d7d7d7;
+  border: 0.5px solid #000000;
   background: none;
   color: var(--gg-ink);
   font-family: var(--gg-font);
@@ -326,20 +324,23 @@
 .gg-popup__dropdown-value { padding-inline: 12px; }
 
 /* Placeholder reads lighter until a real value is chosen. */
-.gg-popup__dropdown-value[data-placeholder] { color: #6b6b6b; }
+.gg-popup__dropdown-value[data-placeholder] { color: #000000; }
 
 .gg-popup__dropdown-chevron {
   display: grid;
   place-items: center;
   align-self: stretch;
-  border-inline-start: 1px solid #d7d7d7;
-  /* Flips to point up while open. */
+  border-inline-start: 0.5px solid #000000;
+}
+
+/* Only the glyph turns — rotating the wrapper would swing its divider too. */
+.gg-popup__dropdown-chevron svg {
+  width: 14px;
+  height: 14px;
   transition: transform 300ms ease-out;
 }
 
-.gg-popup__dropdown-chevron svg { width: 14px; height: 14px; }
-
-.gg-popup__dropdown-trigger[aria-expanded='true'] .gg-popup__dropdown-chevron {
+.gg-popup__dropdown-trigger[aria-expanded='true'] .gg-popup__dropdown-chevron svg {
   transform: rotate(180deg);
 }
 
@@ -352,15 +353,16 @@
   z-index: 2;
   margin: 0;
   padding: 0;
-  border: 1px solid #d7d7d7;
+  border: 0.5px solid #000000;
   border-block-start: 0;
   background-color: #ffffff;
   list-style: none;
   /*
-    Five 36px rows — a full XS..XL set shows without scrolling. Longer sets
-    scroll here, and this is the only scrollable region in the popup.
+    Three 36px rows. The control sits ~322px down a 447px card, so this is the
+    most that fits before the panel would spill past the card's bottom edge.
+    Longer option sets scroll here — the only scrollable region in the popup.
   */
-  max-height: 180px;
+  max-height: 108px;
   overflow-y: auto;
 }
 
