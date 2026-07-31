@@ -101,7 +101,7 @@
         "heading_font": "playfair_display_n4",
         "swatch_colors": "Blue: #0D499F\nRed: #B20F36\nGrey: #AFAFB7",
         "fallback_collection": "",
-        "bonus_product": "dark-winter-jacket",
+        "bonus_product": "",
         "bonus_handle": "soft-winter-jacket",
         "bonus_trigger_a": "Black",
         "bonus_trigger_b": "M",
